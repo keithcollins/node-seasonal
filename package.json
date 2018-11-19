@@ -1,0 +1,29 @@
+{
+  "name": "node-seasonal",
+  "version": "1.0.0",
+  "description": "A simple Node.js wrapper for X-13-ARIMA-SEATS, the seasonal adjustment software by the U.S. Census Bureau",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/keithcollins/node-seasonal.git"
+  },
+  "keywords": [
+    "X-13-ARIMA-SEATS",
+    "seasonal",
+    "monthly"
+  ],
+  "author": "Keith Collins",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/keithcollins/node-seasonal/issues"
+  },
+  "homepage": "https://github.com/keithcollins/node-seasonal#readme",
+  "dependencies": {
+    "bluebird": "^3.5.3",
+    "d3-dsv": "^1.0.10",
+    "rimraf": "^2.6.2"
+  }
+}
