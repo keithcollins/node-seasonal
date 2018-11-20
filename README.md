@@ -45,11 +45,12 @@ The above will auto-adjust the input data and append it. The output will include
     shirt_sales: 35991,
     shoe_sales_d11: 90443,
     shirt_sales_d11: 38002
-    s
   },
   // { ... } etc etc
 ]
 ```
+
+Each valid table ID specified in the options will append a new field for each value field specified.
 
 ## Options
 
