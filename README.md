@@ -57,8 +57,11 @@ Each valid table ID specified in the options will append a new field for each va
 Required properties for `seasonal.adjust()` options:
 
 `date_field` (String) Date format must be YYYY-MM
+
 `value_fields` (Array of strings) Should include all fields in input data that should be seasonally adjusted
+
 `table_ids` (Array of strings) Refer to the [x13ashtml reference manual](https://www.census.gov/ts/x13as/docX13ASHTML.pdf) for a listing of codes (`d11` is final seasonally adjusted numbers)
+
 
 Optional properties for `seasonal.adjust()` options:
 
