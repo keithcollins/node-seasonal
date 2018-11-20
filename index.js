@@ -9,20 +9,10 @@ const seasonal = {};
 
 // Return auto-adusted figures appended to input data
 seasonal.adjust = function(data,opts) {
-
-  const temp_dir = `${__dirname}/temp`;
-
-  // If no output directory defined, add temp
-  if (!opts.output_dir) {
-    cleanUp(temp_dir);
-    fs.mkdirSync(temp_dir);
-    opts.output_dir = temp_dir;
-  }
-
-  // Add data and retain changes in global obj
-  opts.data = data;
-  seasonal.opts = opts;
   
+  // Set defaults and check inputs
+  seasonal.opts = initOptions(data,opts);
+
   // Auto detect dates and update global obj
   getDateExtent();
 
@@ -33,7 +23,7 @@ seasonal.adjust = function(data,opts) {
   collateSeasonalData();
 
   // Delete temp directory if it exists, and contents
-  cleanUp(temp_dir);
+  cleanUp(seasonal.opts.temp_dir);
 
   // Return data with appended seasonal adjustments
   return seasonal.opts.data;
@@ -41,8 +31,56 @@ seasonal.adjust = function(data,opts) {
 
 // Run custom spec file
 seasonal.custom = function(opts) {
-  seasonal.opts = opts;
+  seasonal.opts = initCustomOptions(opts);
   executeX13();
+}
+
+function initOptions(data,opts) {
+
+  // Check input data
+  if (!data || !Array.isArray(data) || data.length <= 0) {
+    exitError("Input data does not exist, is not array or is empty.");
+  } 
+
+  // Check required props
+  if (!opts.date_field) {
+    exitError("A value is required in the date_field property.");
+  } 
+  if (!opts.value_fields || !Array.isArray(opts.value_fields) || opts.value_fields.length <= 0) {
+    exitError("The value_fields property must contain an array of at least one value.");
+  }
+  if (!opts.table_ids || !Array.isArray(opts.table_ids) || opts.table_ids.length <= 0) {
+    exitError("The table_ids property must contain an array of at least one value.");
+  }
+
+  // Set log to off by default
+  opts.log = opts.log || false;
+  // Set default temp directory
+  opts.temp_dir = `${__dirname}/temp`;
+  // Add data to retain changes in global obj
+  opts.data = data;
+  // Set output directory
+  if (opts.output_dir) {
+    // If defined output directory doesn't exist, create
+    if (!fs.existsSync(opts.output_dir)) fs.mkdirSync(opts.output_dir);
+  } else {
+    // If no output directory defined, add temp
+    if (!fs.existsSync(opts.temp_dir)) cleanUp(opts.temp_dir);
+    fs.mkdirSync(opts.temp_dir);
+    opts.output_dir = opts.temp_dir;
+  }
+
+  return opts;
+}
+
+function initCustomOptions(opts) {
+  // Check required props
+  if (!opts.input_file_path) {
+    exitError("No input file specified.");
+  }
+  // Set log to off by default
+  opts.log = opts.log || false;
+  return opts;
 }
 
 // Get range of years and earliest month for use in x13 input file
@@ -58,12 +96,26 @@ function getDateExtent() {
     .map(d=>+getMonthFromDate(d[opts.date_field])));
   // Zero-pad months
   if (opts.start_month < 10) `0${opts.start_month}`;
+
+  // Validate detected dates
+  if (+opts.start_month < 1 || +opts.start_month > 12) {
+    exitError("Detected start month was not between 1 and 12.");
+    process.exit(1);
+  }
+  if (opts.start_year.toString().length > 4 || opts.start_year.toString().length < 4) {
+    exitError("Detected start year was not four digits long.");
+    process.exit(1);
+  }
+  if (opts.end_year.toString().length > 4 || opts.end_year.toString().length < 4) {
+    exitError("Detected end year was not four digits long.");
+    process.exit(1);
+  }
+
   seasonal.opts = opts;
 }
 
 // Create one input file for each set of values
 function createInputFiles() {
-
   const opts = seasonal.opts;
 
   // Create input file for auto-adjustment
@@ -87,7 +139,11 @@ function createInputFiles() {
     spec += `x11{ save = (${opts.table_ids.join(" ")}) }`;
   
     // Save input file
-    fs.writeFileSync(`${opts.output_dir}/node_seasonal_${val_field}.spc`,spec,"utf8");
+    try {
+      fs.writeFileSync(`${opts.output_dir}/node_seasonal_${val_field}.spc`,spec,"utf8");
+    } catch(err) {
+      exitError(err);
+    }
   }
 }
 
@@ -95,10 +151,10 @@ function createInputFiles() {
 function collateSeasonalData() {
   const opts = seasonal.opts;
   for (let val_field of opts.value_fields) {
+    const seas = getSeasonalData(val_field);
     for (let table_id of opts.table_ids) {
-      const seas = getSeasonalData(val_field)[table_id];
       seasonal.opts.data.forEach(d=>{
-        const adj = seas.filter(a=>a[opts.date_field]==d[opts.date_field])[0];
+        const adj = seas[table_id].filter(a=>a[opts.date_field]==d[opts.date_field])[0];
         d[`${val_field}_${table_id}`] = (adj) ? +adj.val : "";
       });
     }
@@ -129,11 +185,12 @@ function executeX13(val_field) {
     let stdout = execSync(`${bin_path} ${input_file_path}`);
     if (opts.log) console.log(stdout.toString());
   } 
-  catch (error) {
-    // console.log(error.status);
-    console.log(error.message);
-    // console.log(error.stderr.toString());
-    // console.log(error.stdout.toString());
+  catch (err) {
+    exitError(err.message);
+    // console.log(err.status);
+    // console.log(err.message);
+    // console.log(err.stderr.toString());
+    // console.log(err.stdout.toString());
   }
 }
 
@@ -150,9 +207,20 @@ function formatSeasonalData(val_field,table_id) {
     });
 }
 
+function exitError(message) {
+  console.log(new Error(message));
+  process.exit(1);
+}
+
 // Delete directory and contents
 function cleanUp(dir) {
-  if (fs.existsSync(dir)) rimraf.sync(dir);
+  if (fs.existsSync(dir)) {
+    try {
+      rimraf.sync(dir);
+    } catch (err) {
+      exitError(err);
+    }
+  }
 }
 
 function getYearFromDate(date) {
