@@ -54,7 +54,7 @@ Each valid table ID specified in the options will append a new field for each va
 
 ## Options
 
-Required properties for `seasonal.adjust()` options:
+**Required properties for `seasonal.adjust()` options:**
 
 `date_field` (String) Date format must be YYYY-MM
 
@@ -63,10 +63,12 @@ Required properties for `seasonal.adjust()` options:
 `table_ids` (Array of strings) Refer to the [x13ashtml reference manual](https://www.census.gov/ts/x13as/docX13ASHTML.pdf) for a listing of codes (`d11` is final seasonally adjusted numbers)
 
 
-Optional properties for `seasonal.adjust()` options:
+**Optional properties for `seasonal.adjust()` options:**
 
 `output_dir` (String) Where to output x13ashtml files. If empty or null, output files are deleted.
+
 `log` (Boolean) Whether to log output of x13ashtml command, which is useful for debugging. (Default is false.)
+
 
 ## Use a custom .spc file
 
