@@ -35,7 +35,7 @@ const options = {
 const adjusted_data = seasonal.adjust(input_data, options);
 ```
 
-The above will auto-adjust the input data and append it. The output will include the original data, with new fields for the adjustment which include the table ID of the calculation requested. That is, in the example above, `adjusted_data` would look like this:
+The above will auto-adjust the input data and append the adjusted numbers to it. The output will include the original data, with new fields for the adjusted numbers which include the requested table IDs. That is, in the example above, `adjusted_data` would look like this:
 
 ```js
 [
@@ -56,7 +56,7 @@ Each valid table ID specified in the options will append a new field for each va
 
 **Required properties:**
 
-`date_field` (String) Date format must be YYYY-MM
+`date_field` (String) Date format must be YYYY-MM; (`seasonal.adjust()` only supports monthly adjustments)
 
 `value_fields` (Array of strings) Should include all fields in input data that should be seasonally adjusted
 
