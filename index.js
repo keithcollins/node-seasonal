@@ -38,8 +38,8 @@ seasonal.custom = function(opts) {
 function initOptions(data,opts) {
 
   // Check input data
-  if (!data || !Array.isArray(data) || data.length <= 0) {
-    exitError("Input data does not exist, is not array or is empty.");
+  if (!data || !Array.isArray(data) || data.length < 36) {
+    exitError("Input data does not exist, is not array or has fewer than 36 months of data. (Series to be modelled and/or seasonally adjusted must have at least 3 complete years of data.)");
   }
 
   // Check required props
@@ -193,6 +193,7 @@ function executeX13(val_field) {
   try {
     let stdout = execSync(`${bin_path} ${input_file_path}`);
     if (opts.log) console.log(stdout.toString());
+    if (stdout.toString().includes("ERROR: ")) exitError(stdout.toString());
   } 
   catch (err) {
     exitError(err.message);
@@ -218,6 +219,7 @@ function formatSeasonalData(val_field,table_id) {
 
 function exitError(message) {
   console.log(new Error(message));
+  cleanUp(`${__dirname}/temp`);
   process.exit(1);
 }
 

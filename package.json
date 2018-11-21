@@ -1,6 +1,6 @@
 {
   "name": "node-seasonal",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A simple Node.js wrapper for X-13-ARIMA-SEATS, the seasonal adjustment software by the U.S. Census Bureau",
   "main": "index.js",
   "scripts": {
