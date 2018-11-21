@@ -14,14 +14,6 @@ Use:
 ```js
 const seasonal = require('node-seasonal');
 
-const options = {
-  date_field: "month", // Dates must be formatted YYYY-MM
-  value_fields: ["shoe_sales", "shirt_sales"], // All values in data to adjust
-  table_ids: ["d11"], // d11 is standard seasonal adjustment
-  output_dir: `${__dirname}/output`, // x13 files deleted if left empty
-  log: true // Whether to log output of x13 command
-};
-
 // Your input data must be an array of objects with the requred fields
 const input_data = [
   {
@@ -32,10 +24,18 @@ const input_data = [
   // { ... } etc etc
 ];
 
-const adjusted data = seasonal.adjust(input_data, options);
+const options = {
+  date_field: "month", // Dates must be formatted YYYY-MM
+  value_fields: ["shoe_sales", "shirt_sales"], // All values in data to adjust
+  table_ids: ["d11"], // d11 is standard seasonal adjustment
+  output_dir: `${__dirname}/output`, // x13 files deleted if left empty
+  log: true // Whether to log output of x13 command
+};
+
+const adjusted_data = seasonal.adjust(input_data, options);
 ```
 
-The above will auto-adjust the input data and append it. The output will include the original data, with new fields for the adjustment which include the table ID of the calculation requested. That is, in the example above, `adjusted` would look like this:
+The above will auto-adjust the input data and append the adjusted numbers to it. The output will include the original data, with new fields for the adjusted numbers which include the requested table IDs. That is, in the example above, `adjusted_data` would look like this:
 
 ```js
 [
@@ -54,16 +54,21 @@ Each valid table ID specified in the options will append a new field for each va
 
 ## Options
 
-Required properties for `seasonal.adjust()` options:
+**Required properties:**
 
-`date_field` (String) Date format must be YYYY-MM
+`date_field` (String) Date format must be YYYY-MM; (`seasonal.adjust()` only supports monthly adjustments)
+
 `value_fields` (Array of strings) Should include all fields in input data that should be seasonally adjusted
+
 `table_ids` (Array of strings) Refer to the [x13ashtml reference manual](https://www.census.gov/ts/x13as/docX13ASHTML.pdf) for a listing of codes (`d11` is final seasonally adjusted numbers)
 
-Optional properties for `seasonal.adjust()` options:
+
+**Optional properties:**
 
 `output_dir` (String) Where to output x13ashtml files. If empty or null, output files are deleted.
+
 `log` (Boolean) Whether to log output of x13ashtml command, which is useful for debugging. (Default is false.)
+
 
 ## Use a custom .spc file
 
