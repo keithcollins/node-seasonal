@@ -40,7 +40,7 @@ function initOptions(data,opts) {
   // Check input data
   if (!data || !Array.isArray(data) || data.length <= 0) {
     exitError("Input data does not exist, is not array or is empty.");
-  } 
+  }
 
   // Check required props
   if (!opts.date_field) {
@@ -53,6 +53,15 @@ function initOptions(data,opts) {
     exitError("The table_ids property must contain an array of at least one value.");
   }
 
+  // Make sure all input data has values above zero
+  for (let value_field of opts.value_fields) {
+    if (Math.min(...data.map(d=>+d[value_field])) <= 0) {
+      exitError("Input data cannot include zero or negative values.");
+    }
+  }
+
+  // Get current timestamp for output filenames
+  opts.timestamp = Date.now();
   // Set log to off by default
   opts.log = opts.log || false;
   // Set default temp directory
@@ -65,7 +74,7 @@ function initOptions(data,opts) {
     if (!fs.existsSync(opts.output_dir)) fs.mkdirSync(opts.output_dir);
   } else {
     // If no output directory defined, add temp
-    if (!fs.existsSync(opts.temp_dir)) cleanUp(opts.temp_dir);
+    cleanUp(opts.temp_dir);
     fs.mkdirSync(opts.temp_dir);
     opts.output_dir = opts.temp_dir;
   }
@@ -124,7 +133,7 @@ function createInputFiles() {
     spec += `title = "node-seasonal auto adjust"\n`;
     spec += `data = (\n`;
   
-    // x13 expects 12 space-delimited values for each year to be adjusted
+    // x13 expects 12 space-delimited values (representing months) for each year to be adjusted
     for (let y = opts.start_year; y <= opts.end_year; y++) {
       spec += opts.data
         .filter(d=>+getYearFromDate(d[opts.date_field]) == y)
@@ -140,7 +149,7 @@ function createInputFiles() {
   
     // Save input file
     try {
-      fs.writeFileSync(`${opts.output_dir}/node_seasonal_${val_field}.spc`,spec,"utf8");
+      fs.writeFileSync(`${opts.output_dir}/${opts.timestamp}_${val_field}.spc`,spec,"utf8");
     } catch(err) {
       exitError(err);
     }
@@ -175,7 +184,7 @@ function executeX13(val_field) {
   const opts = seasonal.opts;
 
   // Get user-inputted path or generated one
-  const input_file_path = opts.input_file_path || `${opts.output_dir}/node_seasonal_${val_field}`;
+  const input_file_path = opts.input_file_path || `${opts.output_dir}/${opts.timestamp}_${val_field}`;
 
   // Get binary path based on user OS: could be 'darwin', 'freebsd', 'linux', 'sunos', 'win32'
   let bin_path = `${__dirname}/x13binary/osx/bin/x13ashtml`;
@@ -197,12 +206,12 @@ function executeX13(val_field) {
 // x13ashtml saves seasonally adjusted data to a tab-separated file
 function formatSeasonalData(val_field,table_id) {
   const opts = seasonal.opts;
-  return d3.tsvParse(fs.readFileSync(`${opts.output_dir}/node_seasonal_${val_field}.${table_id}`,"utf8"))
+  return d3.tsvParse(fs.readFileSync(`${opts.output_dir}/${opts.timestamp}_${val_field}.${table_id}`,"utf8"))
     .filter(d=>d.date!=="------")
     .map(d=>{
       return {
         month: d.date.substr(0, 4) + "-" + d.date.substr(4),
-        val: Number.parseFloat(+d[`node_seasonal_${val_field}.${table_id}`]).toFixed(2)
+        val: Number.parseFloat(+d[`${opts.timestamp}_${val_field}.${table_id}`]).toFixed(2)
       }
     });
 }
