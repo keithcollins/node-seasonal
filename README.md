@@ -14,14 +14,6 @@ Use:
 ```js
 const seasonal = require('node-seasonal');
 
-const options = {
-  date_field: "month", // Dates must be formatted YYYY-MM
-  value_fields: ["shoe_sales", "shirt_sales"], // All values in data to adjust
-  table_ids: ["d11"], // d11 is standard seasonal adjustment
-  output_dir: `${__dirname}/output`, // x13 files deleted if left empty
-  log: true // Whether to log output of x13 command
-};
-
 // Your input data must be an array of objects with the requred fields
 const input_data = [
   {
@@ -32,10 +24,18 @@ const input_data = [
   // { ... } etc etc
 ];
 
-const adjusted data = seasonal.adjust(input_data, options);
+const options = {
+  date_field: "month", // Dates must be formatted YYYY-MM
+  value_fields: ["shoe_sales", "shirt_sales"], // All values in data to adjust
+  table_ids: ["d11"], // d11 is standard seasonal adjustment
+  output_dir: `${__dirname}/output`, // x13 files deleted if left empty
+  log: true // Whether to log output of x13 command
+};
+
+const adjusted_data = seasonal.adjust(input_data, options);
 ```
 
-The above will auto-adjust the input data and append it. The output will include the original data, with new fields for the adjustment which include the table ID of the calculation requested. That is, in the example above, `adjusted` would look like this:
+The above will auto-adjust the input data and append it. The output will include the original data, with new fields for the adjustment which include the table ID of the calculation requested. That is, in the example above, `adjusted_data` would look like this:
 
 ```js
 [
