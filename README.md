@@ -14,21 +14,22 @@ Use:
 ```js
 const seasonal = require('node-seasonal');
 
-// Your input data must be an array of objects with the requred fields
+// Your input data must be an array of objects with a field for the date and at least one field that has values.
 const input_data = [
   {
-    month: "1998-01",
+    month: "1998-01", // Dates must be formatted YYYY-MM
     shoe_sales: 100343,
     shirt_sales: 35991
   },
   // { ... } etc etc
 ];
 
+// Specify the names of the fields that hold your date and value(s)
 const options = {
-  date_field: "month", // Dates must be formatted YYYY-MM
-  value_fields: ["shoe_sales", "shirt_sales"], // All values in data to adjust
-  table_ids: ["d11"], // d11 is standard seasonal adjustment
-  output_dir: `${__dirname}/output`, // x13 files deleted if left empty
+  date_field: "month",
+  value_fields: ["shoe_sales", "shirt_sales"], // The values in the fields listed here will be seasonally adjusted
+  table_ids: ["d11"], // d11 just means standard seasonal adjustment (see below)
+  output_dir: `${__dirname}/output`, // WHere to save x13 files (they are deleted if this is left empty)
   log: true // Whether to log output of x13 command
 };
 
@@ -43,8 +44,8 @@ The above will auto-adjust the input data and append the adjusted numbers to it.
     month: "1998-01",
     shoe_sales: 100343,
     shirt_sales: 35991,
-    shoe_sales_d11: 90443,
-    shirt_sales_d11: 38002
+    shoe_sales_d11: 90443, // seasonally-adjusted value
+    shirt_sales_d11: 38002 // seasonally-adjusted value
   },
   // { ... } etc etc
 ]
